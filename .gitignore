@@ -3,3 +3,4 @@ im2txt/data/mscoco
 im2txt/model
 *.hdf5
 *.ckpt
+*.pyc
