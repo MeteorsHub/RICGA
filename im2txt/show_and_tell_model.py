@@ -263,18 +263,20 @@ class ShowAndTellModel(object):
                 input_keep_prob=self.config.lstm_dropout_keep_prob,
                 output_keep_prob=self.config.lstm_dropout_keep_prob)
 
-        self.double_image_embeddings = tf.tile(self.image_embeddings, [1, 2], name="double_image_embeddings")
-        self.expand_image_embeddings = tf.expand_dims(self.image_embeddings, 1, name="expand_image_embeddings")
-        if self.mode == "inference":
-            self.tile_image_embeddings = tf.tile(self.expand_image_embeddings,
-                                                 [tf.shape(self.seq_embeddings)[0],
-                                                  tf.shape(self.seq_embeddings)[1], 1],
-                                                 name="tile_image_embeddings")
-        else:
-            self.tile_image_embeddings = tf.tile(self.expand_image_embeddings,
-                                                 [1, tf.shape(self.seq_embeddings)[1], 1],
-                                                 name="tile_image_embeddings")
-        self.con_embeddings = tf.concat([self.seq_embeddings, self.tile_image_embeddings], 2)
+        with tf.variable_scope("process_lstm_input", initializer=self.initializer):
+            self.double_image_embeddings = tf.concat([self.image_embeddings, self.image_embeddings], 1,
+                                                     name="double_image_embeddings")
+            self.expand_image_embeddings = tf.expand_dims(self.image_embeddings, 1, name="expand_image_embeddings")
+            if self.mode == "inference":
+                self.tile_image_embeddings = tf.tile(self.expand_image_embeddings,
+                                                     [tf.shape(self.seq_embeddings)[0],
+                                                      1, 1],
+                                                     name="tile_image_embeddings")
+            else:
+                self.tile_image_embeddings = tf.tile(self.expand_image_embeddings,
+                                                     [1, tf.shape(self.seq_embeddings)[1], 1],
+                                                     name="tile_image_embeddings")
+            self.con_embeddings = tf.concat([self.seq_embeddings, self.tile_image_embeddings], 2)
 
         with tf.variable_scope("lstm", initializer=self.initializer) as lstm_scope:
             # Feed the image embeddings to set the initial LSTM state.
