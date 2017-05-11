@@ -46,7 +46,7 @@ tf.flags.DEFINE_integer("eval_interval_secs", 600,
 tf.flags.DEFINE_integer("num_eval_examples", 10132,
                         "Number of examples for evaluation.")
 
-tf.flags.DEFINE_integer("min_global_step", 5000,
+tf.flags.DEFINE_integer("min_global_step", 100,
                         "Minimum global step to run evaluation.")
 
 tf.logging.set_verbosity(tf.logging.INFO)

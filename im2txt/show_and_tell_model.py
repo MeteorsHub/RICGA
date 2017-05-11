@@ -77,6 +77,18 @@ class ShowAndTellModel(object):
         # A float32 Tensor with shape [batch_size, padded_length, embedding_size].
         self.seq_embeddings = None
 
+        # A float32 Tensor with shape [batch_size, 2 * embedding_size].
+        self.double_image_embeddings = None
+
+        # A float32 Tensor with shape [batch_size, padded_length, embedding_size].
+        self.expand_image_embeddings = None
+
+        # A float32 Tensor with shape [batch_size, padded_length, embedding_size].
+        self.tile_image_embeddings = None
+
+        # A float32 Tensor with shape [batch_size, padded_length, 2 * embedding_size].
+        self.con_embeddings = None
+
         # A float32 scalar Tensor; the total loss for the trainer to optimize.
         self.total_loss = None
 
@@ -251,11 +263,24 @@ class ShowAndTellModel(object):
                 input_keep_prob=self.config.lstm_dropout_keep_prob,
                 output_keep_prob=self.config.lstm_dropout_keep_prob)
 
+        self.double_image_embeddings = tf.tile(self.image_embeddings, [1, 2], name="double_image_embeddings")
+        self.expand_image_embeddings = tf.expand_dims(self.image_embeddings, 1, name="expand_image_embeddings")
+        if self.mode == "inference":
+            self.tile_image_embeddings = tf.tile(self.expand_image_embeddings,
+                                                 [tf.shape(self.seq_embeddings)[0],
+                                                  tf.shape(self.seq_embeddings)[1], 1],
+                                                 name="tile_image_embeddings")
+        else:
+            self.tile_image_embeddings = tf.tile(self.expand_image_embeddings,
+                                                 [1, tf.shape(self.seq_embeddings)[1], 1],
+                                                 name="tile_image_embeddings")
+        self.con_embeddings = tf.concat([self.seq_embeddings, self.tile_image_embeddings], 2)
+
         with tf.variable_scope("lstm", initializer=self.initializer) as lstm_scope:
             # Feed the image embeddings to set the initial LSTM state.
             zero_state = lstm_cell.zero_state(
                 batch_size=self.image_embeddings.get_shape()[0], dtype=tf.float32)
-            _, initial_state = lstm_cell(self.image_embeddings, zero_state)
+            _, initial_state = lstm_cell(self.double_image_embeddings, zero_state)
 
             # Allow the LSTM variables to be reused.
             lstm_scope.reuse_variables()
@@ -273,7 +298,7 @@ class ShowAndTellModel(object):
 
                 # Run a single LSTM step.
                 lstm_outputs, state_tuple = lstm_cell(
-                    inputs=tf.squeeze(self.seq_embeddings, axis=[1]),
+                    inputs=tf.squeeze(self.con_embeddings, axis=[1]),
                     state=state_tuple)
 
                 # Concatentate the resulting state.
@@ -282,7 +307,7 @@ class ShowAndTellModel(object):
                 # Run the batch of sequence embeddings through the LSTM.
                 sequence_length = tf.reduce_sum(self.input_mask, 1)
                 lstm_outputs, _ = tf.nn.dynamic_rnn(cell=lstm_cell,
-                                                    inputs=self.seq_embeddings,
+                                                    inputs=self.con_embeddings,
                                                     sequence_length=sequence_length,
                                                     initial_state=initial_state,
                                                     dtype=tf.float32,
