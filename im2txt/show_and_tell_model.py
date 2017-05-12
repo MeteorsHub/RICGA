@@ -24,10 +24,12 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
+import os
 
 from im2txt.ops import image_embedding
 from im2txt.ops import image_processing
 from im2txt.ops import inputs as input_ops
+from im2txt.reference.ssd import SSD300
 
 
 class ShowAndTellModel(object):
@@ -62,6 +64,9 @@ class ShowAndTellModel(object):
         # A float32 Tensor with shape [batch_size, height, width, channels].
         self.images = None
 
+        # A float32 Tensor with shape [batch_size, 300, 300, channels]. For ssd detection.
+        self.images_300x300 = None
+
         # An int32 Tensor with shape [batch_size, padded_length].
         self.input_seqs = None
 
@@ -77,17 +82,14 @@ class ShowAndTellModel(object):
         # A float32 Tensor with shape [batch_size, padded_length, embedding_size].
         self.seq_embeddings = None
 
+        # A float32 Tensor with shape [batch_size, embedding_size].
+        self.region_aspect_embeddings = None
+
         # A float32 Tensor with shape [batch_size, 2 * embedding_size].
-        self.double_image_embeddings = None
-
-        # A float32 Tensor with shape [batch_size, padded_length, embedding_size].
-        self.expand_image_embeddings = None
-
-        # A float32 Tensor with shape [batch_size, padded_length, embedding_size].
-        self.tile_image_embeddings = None
+        self.image_embeddings_with_aspect = None
 
         # A float32 Tensor with shape [batch_size, padded_length, 2 * embedding_size].
-        self.con_embeddings = None
+        self.seq_embeddings_with_aspect = None
 
         # A float32 scalar Tensor; the total loss for the trainer to optimize.
         self.total_loss = None
@@ -189,17 +191,9 @@ class ShowAndTellModel(object):
         self.target_seqs = target_seqs
         self.input_mask = input_mask
 
-    def build_image_embeddings(self):
-        """Builds the image model subgraph and generates image embeddings.
-    
-        Inputs:
-          self.images
-    
-        Outputs:
-          self.image_embeddings
-        """
+    def image_inception_embeddings(self, images):
         inception_output = image_embedding.inception_v3(
-            self.images,
+            images,
             trainable=self.train_inception,
             is_training=self.is_training())
         self.inception_variables = tf.get_collection(
@@ -214,11 +208,102 @@ class ShowAndTellModel(object):
                 weights_initializer=self.initializer,
                 biases_initializer=None,
                 scope=scope)
+            scope.reuse_variables()
 
+        return image_embeddings
+
+    def build_image_embeddings(self):
+        """Builds the image model subgraph and generates image embeddings.
+    
+        Inputs:
+          self.images
+    
+        Outputs:
+          self.image_embeddings
+        """
         # Save the embedding size in the graph.
         tf.constant(self.config.embedding_size, name="embedding_size")
 
-        self.image_embeddings = image_embeddings
+        self.image_embeddings = self.image_inception_embeddings(self.images)
+
+    def build_image_ssd_embeddings(self):
+        self.images_300x300 = tf.image.resize_images(self.images, [300, 300])
+        with tf.variable_scope("ssd"):
+            ssd = SSD300((300, 300, 3))
+            ssd_weights_file = os.path.join(os.path.dirname(self.config.inception_checkpoint_file),
+                                            'weights_SSD300.hdf5')
+            ssd.load_weights(ssd_weights_file)
+            if not self.train_inception:
+                for layer in ssd.layers:
+                    layer.trainable = False
+            ssd_output = ssd(self.images_300x300)
+            ssd_output = tf.reshape(ssd_output,
+                                    tf.TensorShape([self.images.get_shape()[0], ssd_output.get_shape()[1],
+                                                    ssd_output.get_shape()[2]]))
+
+        with tf.variable_scope("ssd_out_processing"):
+            mbox_loc = ssd_output[:, :, :4]
+            variances = ssd_output[:, :, -4:]
+            mbox_priorbox = ssd_output[:, :, -8:-4]
+            mbox_conf = ssd_output[:, :, 4:-8]
+            prior_width = mbox_priorbox[:, :, 2] - mbox_priorbox[:, :, 0]
+            prior_height = mbox_priorbox[:, :, 3] - mbox_priorbox[:, :, 1]
+            prior_center_x = 0.5 * (mbox_priorbox[:, :, 2] + mbox_priorbox[:, :, 0])
+            prior_center_y = 0.5 * (mbox_priorbox[:, :, 3] + mbox_priorbox[:, :, 1])
+            decode_bbox_center_x = mbox_loc[:, :, 0] * prior_width * variances[:, :, 0]
+            decode_bbox_center_x += prior_center_x
+            decode_bbox_center_y = mbox_loc[:, :, 1] * prior_width * variances[:, :, 1]
+            decode_bbox_center_y += prior_center_y
+            decode_bbox_width = tf.exp(mbox_loc[:, :, 2] * variances[:, :, 2])
+            decode_bbox_width *= prior_width
+            decode_bbox_height = tf.exp(mbox_loc[:, :, 3] * variances[:, :, 3])
+            decode_bbox_height *= prior_height
+            decode_bbox_xmin = tf.expand_dims(decode_bbox_center_x - 0.5 * decode_bbox_width, -1)
+            decode_bbox_ymin = tf.expand_dims(decode_bbox_center_y - 0.5 * decode_bbox_height, -1)
+            decode_bbox_xmax = tf.expand_dims(decode_bbox_center_x + 0.5 * decode_bbox_width, -1)
+            decode_bbox_ymax = tf.expand_dims(decode_bbox_center_y + 0.5 * decode_bbox_height, -1)
+            decode_bbox = tf.squeeze(tf.concat((decode_bbox_xmin[:, None],
+                                                decode_bbox_ymin[:, None],
+                                                decode_bbox_xmax[:, None],
+                                                decode_bbox_ymax[:, None]), axis=-1), 1)
+            decode_bbox = tf.minimum(tf.maximum(decode_bbox, 0.0), 1.0)
+
+            mbox_conf_max = tf.reduce_max(mbox_conf, 2)
+
+            idx_list = []
+            for i, bboxes in enumerate(tf.unstack(decode_bbox)):
+                idx_item = tf.image.non_max_suppression(bboxes, mbox_conf_max[i, :], 1)
+                idx_list.append(idx_item)
+            idx = tf.stack(idx_list)
+
+            good_box_list = []
+            for i, idx_item in enumerate(tf.unstack(idx)):
+                good_box_item = decode_bbox[i, idx_item[0], :]
+                good_box_list.append(good_box_item)
+            good_box = tf.stack(good_box_list)
+
+            # In order to make tf.map_fn support multi-params
+            # href=http://stackoverflow.com/questions/37086098/does-tensorflow-map-fn-support-taking-more-than-one-tensor
+            # def mmap(fn, arrays, dtype=tf.float32):
+            #     # assumes all arrays have same leading dim
+            #     indices = tf.range(tf.shape(arrays[0])[0])
+            #     out = tf.map_fn(lambda ii: fn(*[array[ii] for array in arrays]), indices, dtype=dtype)
+            #     return out
+            #
+            # idx = mmap(lambda bbox, score: tf.image.non_max_suppression(bbox, score, 1),
+            #                 [decode_bbox, mbox_conf_max], dtype=tf.int32)
+            # idx = tf.reshape(idx, [-1, 1])
+            # good_box = mmap(lambda boxes, batch_num: boxes[idx[batch_num, 1], :],
+            #                 [decode_bbox, tf.range(0, tf.shape(self.images)[0])], dtype=tf.float32)
+
+        with tf.variable_scope("region_image_generating"):
+            region_images = tf.image.crop_and_resize(self.images_300x300,
+                                                     boxes=good_box,
+                                                     box_ind=tf.range(0, tf.shape(self.images)[0]),
+                                                     crop_size=[300, 300])
+        with tf.variable_scope("region_image_embedding"):
+            region_image_embeddings = self.image_inception_embeddings(region_images)
+            self.region_aspect_embeddings = tf.reshape(region_image_embeddings, tf.shape(self.image_embeddings))
 
     def build_seq_embeddings(self):
         """Builds the input sequence embeddings.
@@ -264,25 +349,27 @@ class ShowAndTellModel(object):
                 output_keep_prob=self.config.lstm_dropout_keep_prob)
 
         with tf.variable_scope("process_lstm_input", initializer=self.initializer):
-            self.double_image_embeddings = tf.concat([self.image_embeddings, self.image_embeddings], 1,
-                                                     name="double_image_embeddings")
-            self.expand_image_embeddings = tf.expand_dims(self.image_embeddings, 1, name="expand_image_embeddings")
+            self.image_embeddings_with_aspect = tf.concat([self.image_embeddings, self.region_aspect_embeddings], 1,
+                                                          name="image_embeddings_with_aspect")
+            expand_region_aspect_embeddings = tf.expand_dims(self.image_embeddings, 1,
+                                                             name="expand_region_aspect_embeddings")
             if self.mode == "inference":
-                self.tile_image_embeddings = tf.tile(self.expand_image_embeddings,
-                                                     [tf.shape(self.seq_embeddings)[0],
-                                                      1, 1],
-                                                     name="tile_image_embeddings")
+                tile_expand_region_aspect_embeddings = tf.tile(expand_region_aspect_embeddings,
+                                                               [tf.shape(self.seq_embeddings)[0],
+                                                                1, 1],
+                                                               name="tile_expand_region_aspect_embeddings")
             else:
-                self.tile_image_embeddings = tf.tile(self.expand_image_embeddings,
-                                                     [1, tf.shape(self.seq_embeddings)[1], 1],
-                                                     name="tile_image_embeddings")
-            self.con_embeddings = tf.concat([self.seq_embeddings, self.tile_image_embeddings], 2)
+                tile_expand_region_aspect_embeddings = tf.tile(expand_region_aspect_embeddings,
+                                                               [1, tf.shape(self.seq_embeddings)[1], 1],
+                                                               name="tile_expand_region_aspect_embeddings")
+            self.seq_embeddings_with_aspect = tf.concat([self.seq_embeddings, tile_expand_region_aspect_embeddings], 2,
+                                                        name="seq_embeddings_with_aspect")
 
         with tf.variable_scope("lstm", initializer=self.initializer) as lstm_scope:
             # Feed the image embeddings to set the initial LSTM state.
             zero_state = lstm_cell.zero_state(
                 batch_size=self.image_embeddings.get_shape()[0], dtype=tf.float32)
-            _, initial_state = lstm_cell(self.double_image_embeddings, zero_state)
+            _, initial_state = lstm_cell(self.image_embeddings_with_aspect, zero_state)
 
             # Allow the LSTM variables to be reused.
             lstm_scope.reuse_variables()
@@ -300,7 +387,7 @@ class ShowAndTellModel(object):
 
                 # Run a single LSTM step.
                 lstm_outputs, state_tuple = lstm_cell(
-                    inputs=tf.squeeze(self.con_embeddings, axis=[1]),
+                    inputs=tf.squeeze(self.seq_embeddings_with_aspect, axis=[1]),
                     state=state_tuple)
 
                 # Concatentate the resulting state.
@@ -309,7 +396,7 @@ class ShowAndTellModel(object):
                 # Run the batch of sequence embeddings through the LSTM.
                 sequence_length = tf.reduce_sum(self.input_mask, 1)
                 lstm_outputs, _ = tf.nn.dynamic_rnn(cell=lstm_cell,
-                                                    inputs=self.con_embeddings,
+                                                    inputs=self.seq_embeddings_with_aspect,
                                                     sequence_length=sequence_length,
                                                     initial_state=initial_state,
                                                     dtype=tf.float32,
@@ -378,6 +465,7 @@ class ShowAndTellModel(object):
         """Creates all ops for training and evaluation."""
         self.build_inputs()
         self.build_image_embeddings()
+        self.build_image_ssd_embeddings()
         self.build_seq_embeddings()
         self.build_model()
         self.setup_inception_initializer()
