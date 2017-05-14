@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import keras
 import tensorflow as tf
 
 from im2txt import configuration
@@ -29,6 +30,8 @@ tf.flags.DEFINE_string("input_file_pattern", "",
                        "File pattern of sharded TFRecord input files.")
 tf.flags.DEFINE_string("inception_checkpoint_file", "",
                        "Path to a pretrained inception_v3 model.")
+tf.flags.DEFINE_string("ssd300_checkpoint_file", "",
+                       "Path to a pretrained ssd300 model.")
 tf.flags.DEFINE_string("train_dir", "",
                        "Directory for saving and loading model checkpoints.")
 tf.flags.DEFINE_boolean("train_inception", False,
@@ -47,6 +50,7 @@ def main(unused_argv):
     model_config = configuration.ModelConfig()
     model_config.input_file_pattern = FLAGS.input_file_pattern
     model_config.inception_checkpoint_file = FLAGS.inception_checkpoint_file
+    model_config.ssd300_checkpoint_file = FLAGS.ssd300_checkpoint_file
     training_config = configuration.TrainingConfig()
 
     # Create training directory.
@@ -75,9 +79,9 @@ def main(unused_argv):
                 decay_steps = int(num_batches_per_epoch *
                                   training_config.num_epochs_per_decay)
 
-                def _learning_rate_decay_fn(learning_rate, global_step):
+                def _learning_rate_decay_fn(input_learning_rate, global_step):
                     return tf.train.exponential_decay(
-                        learning_rate,
+                        input_learning_rate,
                         global_step,
                         decay_steps=decay_steps,
                         decay_rate=training_config.learning_rate_decay_factor,
@@ -97,18 +101,22 @@ def main(unused_argv):
         # Set up the Saver for saving and restoring model checkpoints.
         saver = tf.train.Saver(max_to_keep=training_config.max_checkpoints_to_keep)
 
-    # Run training.
-    tf.contrib.slim.learning.train(
-        train_op,
-        train_dir,
-        log_every_n_steps=FLAGS.log_every_n_steps,
-        graph=g,
-        global_step=model.global_step,
-        number_of_steps=FLAGS.number_of_steps,
-        init_fn=model.init_fn,
-        save_interval_secs=120,
-        saver=saver)
+    sess = tf.Session()
+    keras.backend.set_session(sess)
+    keras.backend.set_learning_phase(1)
 
+    with sess:
+        # Run training.
+        tf.contrib.slim.learning.train(
+            train_op,
+            train_dir,
+            log_every_n_steps=FLAGS.log_every_n_steps,
+            graph=g,
+            global_step=model.global_step,
+            number_of_steps=FLAGS.number_of_steps,
+            init_fn=model.init_fn,
+            save_interval_secs=training_config.save_interval_secs,
+            saver=saver)
 
 if __name__ == "__main__":
     tf.app.run()

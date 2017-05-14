@@ -103,7 +103,6 @@ def inception_v3(images,
                         is_training=is_inception_model_training,
                         scope="dropout")
                     net = slim.flatten(net, scope="flatten")
-        scope.reuse_variables()
 
     # Add summaries.
     if add_summaries:

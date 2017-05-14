@@ -173,21 +173,22 @@ def batch_with_dynamic_pad(images_and_captions,
   
     Returns:
       images: A Tensor of shape [batch_size, height, width, channels].
+      region_images: A Tensor of shape [batch_size, height, width, channels].
       input_seqs: An int32 Tensor of shape [batch_size, padded_length].
       target_seqs: An int32 Tensor of shape [batch_size, padded_length].
       mask: An int32 0/1 Tensor of shape [batch_size, padded_length].
     """
     enqueue_list = []
-    for image, caption in images_and_captions:
+    for image, region_image, caption in images_and_captions:
         caption_length = tf.shape(caption)[0]
         input_length = tf.expand_dims(tf.subtract(caption_length, 1), 0)
 
         input_seq = tf.slice(caption, [0], input_length)
         target_seq = tf.slice(caption, [1], input_length)
         indicator = tf.ones(input_length, dtype=tf.int32)
-        enqueue_list.append([image, input_seq, target_seq, indicator])
+        enqueue_list.append([image, region_image, input_seq, target_seq, indicator])
 
-    images, input_seqs, target_seqs, mask = tf.train.batch_join(
+    images, region_image, input_seqs, target_seqs, mask = tf.train.batch_join(
         enqueue_list,
         batch_size=batch_size,
         capacity=queue_capacity,
@@ -200,4 +201,4 @@ def batch_with_dynamic_pad(images_and_captions,
         tf.summary.scalar("caption_length/batch_max", tf.reduce_max(lengths))
         tf.summary.scalar("caption_length/batch_mean", tf.reduce_mean(lengths))
 
-    return images, input_seqs, target_seqs, mask
+    return images, region_image, input_seqs, target_seqs, mask

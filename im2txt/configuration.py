@@ -63,6 +63,8 @@ class ModelConfig(object):
         # first time.
         self.inception_checkpoint_file = None
 
+        self.ssd300_checkpoint_file = None
+
         # Dimensions of Inception v3 input images.
         self.image_height = 299
         self.image_width = 299
@@ -99,6 +101,9 @@ class TrainingConfig(object):
 
         # If not None, clip gradients to this value.
         self.clip_gradients = 5.0
+
+        # Interval between checkpoint saving in seconds
+        self.save_interval_secs = 60
 
         # How many model checkpoints to keep.
         self.max_checkpoints_to_keep = 5
