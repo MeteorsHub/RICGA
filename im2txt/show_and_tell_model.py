@@ -117,7 +117,7 @@ class ShowAndTellModel(object):
         self.global_step = None
 
     def is_training(self):
-        """Returns true if the model is built for training mode."""
+        """Returns true if the model-backup is built for training mode."""
         return self.mode == "train"
 
     def process_image(self, encoded_image, thread_id=0):
@@ -150,9 +150,6 @@ class ShowAndTellModel(object):
         """
         with tf.variable_scope("SSD300"):
             self.ssd_model = SSD300((300, 300, 3))
-            if self.is_training():
-                for layer in self.ssd_model.layers:
-                    layer.trainable = False
         self.ssd300_variables = tf.get_collection(
             tf.GraphKeys.GLOBAL_VARIABLES, scope="SSD300")
 
@@ -211,7 +208,7 @@ class ShowAndTellModel(object):
         self.input_mask = input_mask
 
     def build_image_embeddings(self):
-        """Builds the image model subgraph and generates image embeddings.
+        """Builds the image model-backup subgraph and generates image embeddings.
     
         Inputs:
           self.images
@@ -267,7 +264,7 @@ class ShowAndTellModel(object):
         self.seq_embeddings = seq_embeddings
 
     def build_model(self):
-        """Builds the model.
+        """Builds the model-backup.
     
         Inputs:
           self.image_embeddings

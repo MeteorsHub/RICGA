@@ -37,7 +37,7 @@ class InceptionV3Test(tf.test.TestCase):
         self._batch_size = batch_size
 
     def _countInceptionParameters(self):
-        """Counts the number of parameters in the inception model at top scope."""
+        """Counts the number of parameters in the inception model-backup at top scope."""
         counter = {}
         for v in tf.global_variables():
             name_tokens = v.op.name.split("/")
@@ -49,7 +49,7 @@ class InceptionV3Test(tf.test.TestCase):
         return counter
 
     def _verifyParameterCounts(self):
-        """Verifies the number of parameters in the inception model."""
+        """Verifies the number of parameters in the inception model-backup."""
         param_counts = self._countInceptionParameters()
         expected_param_counts = {
             "InceptionV3/Conv2d_1a_3x3": 960,

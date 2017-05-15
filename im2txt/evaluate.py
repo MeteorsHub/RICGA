@@ -13,7 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 
-"""Evaluate the model.
+"""Evaluate the model-backup.
 
 This script should be run concurrently with training so that summaries show up
 in TensorBoard.
@@ -38,7 +38,7 @@ FLAGS = tf.flags.FLAGS
 tf.flags.DEFINE_string("input_file_pattern", "",
                        "File pattern of sharded TFRecord input files.")
 tf.flags.DEFINE_string("checkpoint_dir", "",
-                       "Directory containing model checkpoints.")
+                       "Directory containing model-backup checkpoints.")
 tf.flags.DEFINE_string("eval_dir", "", "Directory to write event logs.")
 
 tf.flags.DEFINE_integer("eval_interval_secs", 600,
@@ -59,12 +59,12 @@ def evaluate_model(sess, model, global_step, summary_writer, summary_op):
   
     Args:
       sess: Session object.
-      model: Instance of ShowAndTellModel; the model to evaluate.
-      global_step: Integer; global step of the model checkpoint.
+      model: Instance of ShowAndTellModel; the model-backup to evaluate.
+      global_step: Integer; global step of the model-backup checkpoint.
       summary_writer: Instance of FileWriter.
-      summary_op: Op for generating model summaries.
+      summary_op: Op for generating model-backup summaries.
     """
-    # Log model summaries on a single batch.
+    # Log model-backup summaries on a single batch.
     summary_str = sess.run(summary_op)
     summary_writer.add_summary(summary_str, global_step)
 
@@ -104,13 +104,13 @@ def evaluate_model(sess, model, global_step, summary_writer, summary_op):
 
 
 def run_once(model, saver, summary_writer, summary_op):
-    """Evaluates the latest model checkpoint.
+    """Evaluates the latest model-backup checkpoint.
   
     Args:
-      model: Instance of ShowAndTellModel; the model to evaluate.
-      saver: Instance of tf.train.Saver for restoring model Variables.
+      model: Instance of ShowAndTellModel; the model-backup to evaluate.
+      saver: Instance of tf.train.Saver for restoring model-backup Variables.
       summary_writer: Instance of FileWriter.
-      summary_op: Op for generating model summaries.
+      summary_op: Op for generating model-backup summaries.
     """
     model_path = tf.train.latest_checkpoint(FLAGS.checkpoint_dir)
     if not model_path:
@@ -119,8 +119,8 @@ def run_once(model, saver, summary_writer, summary_op):
         return
 
     with tf.Session() as sess:
-        # Load model from checkpoint.
-        tf.logging.info("Loading model from checkpoint: %s", model_path)
+        # Load model-backup from checkpoint.
+        tf.logging.info("Loading model-backup from checkpoint: %s", model_path)
         saver.restore(sess, model_path)
         global_step = tf.train.global_step(sess, model.global_step.name)
         tf.logging.info("Successfully loaded %s at global step = %d.",
@@ -160,13 +160,13 @@ def run():
 
     g = tf.Graph()
     with g.as_default():
-        # Build the model for evaluation.
+        # Build the model-backup for evaluation.
         model_config = configuration.ModelConfig()
         model_config.input_file_pattern = FLAGS.input_file_pattern
         model = show_and_tell_model.ShowAndTellModel(model_config, mode="eval")
         model.build()
 
-        # Create the Saver to restore model Variables.
+        # Create the Saver to restore model-backup Variables.
         saver = tf.train.Saver()
 
         # Create the summary operation and the summary writer.

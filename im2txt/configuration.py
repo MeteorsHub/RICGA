@@ -13,7 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 
-"""Image-to-text model and training configurations."""
+"""Image-to-text model-backup and training configurations."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -21,10 +21,10 @@ from __future__ import print_function
 
 
 class ModelConfig(object):
-    """Wrapper class for model hyperparameters."""
+    """Wrapper class for model-backup hyperparameters."""
 
     def __init__(self):
-        """Sets the default model hyperparameters."""
+        """Sets the default model-backup hyperparameters."""
         # File pattern of sharded TFRecord file containing SequenceExample protos.
         # Must be provided in training and evaluation modes.
         self.input_file_pattern = None
@@ -59,7 +59,7 @@ class ModelConfig(object):
         self.batch_size = 32
 
         # File containing an Inception v3 checkpoint to initialize the variables
-        # of the Inception model. Must be provided when starting training for the
+        # of the Inception model-backup. Must be provided when starting training for the
         # first time.
         self.inception_checkpoint_file = None
 
@@ -69,7 +69,7 @@ class ModelConfig(object):
         self.image_height = 299
         self.image_width = 299
 
-        # Scale used to initialize model variables.
+        # Scale used to initialize model-backup variables.
         self.initializer_scale = 0.08
 
         # LSTM input and output dimensionality, respectively.
@@ -88,7 +88,7 @@ class TrainingConfig(object):
         # Number of examples per epoch of training data.
         self.num_examples_per_epoch = 586363
 
-        # Optimizer for training the model.
+        # Optimizer for training the model-backup.
         self.optimizer = "SGD"
 
         # Learning rate for the initial phase of training.
@@ -105,5 +105,5 @@ class TrainingConfig(object):
         # Interval between checkpoint saving in seconds
         self.save_interval_secs = 60
 
-        # How many model checkpoints to keep.
+        # How many model-backup checkpoints to keep.
         self.max_checkpoints_to_keep = 5

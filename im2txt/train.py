@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Train the model."""
+"""Train the model-backup."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -29,11 +29,11 @@ FLAGS = tf.app.flags.FLAGS
 tf.flags.DEFINE_string("input_file_pattern", "",
                        "File pattern of sharded TFRecord input files.")
 tf.flags.DEFINE_string("inception_checkpoint_file", "",
-                       "Path to a pretrained inception_v3 model.")
+                       "Path to a pretrained inception_v3 model-backup.")
 tf.flags.DEFINE_string("ssd300_checkpoint_file", "",
-                       "Path to a pretrained ssd300 model.")
+                       "Path to a pretrained ssd300 model-backup.")
 tf.flags.DEFINE_string("train_dir", "",
-                       "Directory for saving and loading model checkpoints.")
+                       "Directory for saving and loading model-backup checkpoints.")
 tf.flags.DEFINE_boolean("train_inception", False,
                         "Whether to train inception submodel variables.")
 tf.flags.DEFINE_integer("number_of_steps", 1000000, "Number of training steps.")
@@ -62,7 +62,7 @@ def main(unused_argv):
     # Build the TensorFlow graph.
     g = tf.Graph()
     with g.as_default():
-        # Build the model.
+        # Build the model-backup.
         model = show_and_tell_model.ShowAndTellModel(
             model_config, mode="train", train_inception=FLAGS.train_inception)
         model.build()
@@ -89,6 +89,16 @@ def main(unused_argv):
 
                 learning_rate_decay_fn = _learning_rate_decay_fn
 
+        # Choose trainable variables
+        trainable_variables = []
+        if not FLAGS.train_inception:
+            for variable in tf.trainable_variables():
+                if variable.name[0:6] != "SSD300":
+                    trainable_variables.append(variable)
+        else:
+            for variable in tf.trainable_variables():
+                trainable_variables.append(variable)
+
         # Set up the training ops.
         train_op = tf.contrib.layers.optimize_loss(
             loss=model.total_loss,
@@ -96,9 +106,10 @@ def main(unused_argv):
             learning_rate=learning_rate,
             optimizer=training_config.optimizer,
             clip_gradients=training_config.clip_gradients,
-            learning_rate_decay_fn=learning_rate_decay_fn)
+            learning_rate_decay_fn=learning_rate_decay_fn,
+            variables=trainable_variables)
 
-        # Set up the Saver for saving and restoring model checkpoints.
+        # Set up the Saver for saving and restoring model-backup checkpoints.
         saver = tf.train.Saver(max_to_keep=training_config.max_checkpoints_to_keep)
 
     sess = tf.Session()

@@ -12,15 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Base wrapper class for performing inference with an image-to-text model.
+"""Base wrapper class for performing inference with an image-to-text model-backup.
 
 Subclasses must implement the following methods:
 
   build_model():
-    Builds the model for inference and returns the model object.
+    Builds the model-backup for inference and returns the model-backup object.
 
   feed_image():
-    Takes an encoded image and returns the initial model state, where "state"
+    Takes an encoded image and returns the initial model-backup state, where "state"
     is a numpy array whose specifics are defined by the subclass, e.g.
     concatenated LSTM state. It's assumed that feed_image() will be called
     precisely once at the start of inference for each image. Subclasses may
@@ -30,12 +30,12 @@ Subclasses must implement the following methods:
     Takes a batch of inputs and states at a single time-step. Returns the
     softmax output corresponding to the inputs, and the new states of the batch.
     Optionally also returns metadata about the current inference step, e.g. a
-    serialized numpy array containing activations from a particular model layer.
+    serialized numpy array containing activations from a particular model-backup layer.
 
 Client usage:
-  1. Build the model inference graph via build_graph_from_config() or
+  1. Build the model-backup inference graph via build_graph_from_config() or
      build_graph_from_proto().
-  2. Call the resulting restore_fn to load the model checkpoint.
+  2. Call the resulting restore_fn to load the model-backup checkpoint.
   3. For each image in a batch of images:
      a) Call feed_image() once to get the initial state.
      b) For each step of caption generation, call inference_step().
@@ -54,24 +54,24 @@ import tensorflow as tf
 
 
 class InferenceWrapperBase(object):
-    """Base wrapper class for performing inference with an image-to-text model."""
+    """Base wrapper class for performing inference with an image-to-text model-backup."""
 
     def __init__(self):
         pass
 
     def build_model(self, model_config):
-        """Builds the model for inference.
+        """Builds the model-backup for inference.
     
         Args:
-          model_config: Object containing configuration for building the model.
+          model_config: Object containing configuration for building the model-backup.
     
         Returns:
-          model: The model object.
+          model-backup: The model-backup object.
         """
         tf.logging.fatal("Please implement build_model in subclass")
 
     def _create_restore_fn(self, checkpoint_path, saver):
-        """Creates a function that restores a model from checkpoint.
+        """Creates a function that restores a model-backup from checkpoint.
     
         Args:
           checkpoint_path: Checkpoint file or a directory containing a checkpoint
@@ -79,7 +79,7 @@ class InferenceWrapperBase(object):
           saver: Saver for restoring variables from the checkpoint file.
     
         Returns:
-          restore_fn: A function such that restore_fn(sess) loads model variables
+          restore_fn: A function such that restore_fn(sess) loads model-backup variables
             from the checkpoint file.
     
         Raises:
@@ -92,7 +92,7 @@ class InferenceWrapperBase(object):
                 raise ValueError("No checkpoint file found in: %s" % checkpoint_path)
 
         def _restore_fn(sess):
-            tf.logging.info("Loading model from checkpoint: %s", checkpoint_path)
+            tf.logging.info("Loading model-backup from checkpoint: %s", checkpoint_path)
             saver.restore(sess, checkpoint_path)
             tf.logging.info("Successfully loaded checkpoint: %s",
                             os.path.basename(checkpoint_path))
@@ -103,15 +103,15 @@ class InferenceWrapperBase(object):
         """Builds the inference graph from a configuration object.
     
         Args:
-          model_config: Object containing configuration for building the model.
+          model_config: Object containing configuration for building the model-backup.
           checkpoint_path: Checkpoint file or a directory containing a checkpoint
             file.
     
         Returns:
-          restore_fn: A function such that restore_fn(sess) loads model variables
+          restore_fn: A function such that restore_fn(sess) loads model-backup variables
             from the checkpoint file.
         """
-        tf.logging.info("Building model.")
+        tf.logging.info("Building model-backup.")
         self.build_model(model_config)
         saver = tf.train.Saver()
 
@@ -128,7 +128,7 @@ class InferenceWrapperBase(object):
             file.
     
         Returns:
-          restore_fn: A function such that restore_fn(sess) loads model variables
+          restore_fn: A function such that restore_fn(sess) loads model-backup variables
             from the checkpoint file.
         """
         # Load the Graph.
@@ -148,7 +148,7 @@ class InferenceWrapperBase(object):
         return self._create_restore_fn(checkpoint_path, saver)
 
     def feed_image(self, sess, encoded_image):
-        """Feeds an image and returns the initial model state.
+        """Feeds an image and returns the initial model-backup state.
     
         See comments at the top of file.
     
@@ -174,7 +174,7 @@ class InferenceWrapperBase(object):
           new_state: A numpy array of shape [batch_size, state_size].
           metadata: Optional. If not None, a string containing metadata about the
             current inference step (e.g. serialized numpy array containing
-            activations from a particular model layer.).
+            activations from a particular model-backup layer.).
         """
         tf.logging.fatal("Please implement inference_step in subclass")
 

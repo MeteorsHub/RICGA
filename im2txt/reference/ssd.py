@@ -24,9 +24,9 @@ from keras.layers import Flatten
 from keras.layers import GlobalAveragePooling2D
 from keras.layers import Input
 from keras.layers import MaxPooling2D
-from keras.layers.merge import Concatenate
 from keras.layers import Reshape
 from keras.layers import ZeroPadding2D
+from keras.layers.merge import Concatenate
 from keras.models import Model
 
 from im2txt.reference.ssd_layers import Normalize
@@ -40,7 +40,7 @@ def SSD300(input_shape, num_classes=21):
         input_shape: Shape of the input image,
             expected to be either (300, 300, 3) or (3, 300, 300)(not tested).
         num_classes: Number of classes including background.
-        pretrain: If true, model will use weights pretrained on voc.
+        pretrain: If true, model-backup will use weights pretrained on voc.
 
     # References
         https://arxiv.org/abs/1512.02325

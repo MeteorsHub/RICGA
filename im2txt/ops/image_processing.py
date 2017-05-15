@@ -78,7 +78,7 @@ def process_image(encoded_image,
       is_training: Boolean; whether preprocessing for training or eval.
       height: Height of the output image.
       width: Width of the output image.
-      ssd_model: SSD300 model.
+      ssd_model: SSD300 model-backup.
       resize_height: If > 0, resize height before crop to final dimensions.
       resize_width: If > 0, resize width before crop to final dimensions.
       thread_id: Preprocessing thread id used to select the ordering of color

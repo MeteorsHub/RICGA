@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Vocabulary class for an image-to-text model."""
+"""Vocabulary class for an image-to-text model-backup."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -22,7 +22,7 @@ import tensorflow as tf
 
 
 class Vocabulary(object):
-    """Vocabulary class for an image-to-text model."""
+    """Vocabulary class for an image-to-text model-backup."""
 
     def __init__(self,
                  vocab_file,

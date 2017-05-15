@@ -59,7 +59,7 @@ class ShowAndTellModelTest(tf.test.TestCase):
         self._model_config = configuration.ModelConfig()
 
     def _countModelParameters(self):
-        """Counts the number of parameters in the model at top level scope."""
+        """Counts the number of parameters in the model-backup at top level scope."""
         counter = {}
         for v in tf.global_variables():
             name = v.op.name.split("/")[0]
@@ -69,7 +69,7 @@ class ShowAndTellModelTest(tf.test.TestCase):
         return counter
 
     def _checkModelParameters(self):
-        """Verifies the number of parameters in the model."""
+        """Verifies the number of parameters in the model-backup."""
         param_counts = self._countModelParameters()
         expected_param_counts = {
             "InceptionV3": 21802784,
@@ -86,7 +86,7 @@ class ShowAndTellModelTest(tf.test.TestCase):
         self.assertDictEqual(expected_param_counts, param_counts)
 
     def _checkOutputs(self, expected_shapes, feed_dict=None):
-        """Verifies that the model produces expected outputs.
+        """Verifies that the model-backup produces expected outputs.
     
         Args:
           expected_shapes: A dict mapping Tensor or Tensor name to expected output

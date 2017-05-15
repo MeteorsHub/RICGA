@@ -32,7 +32,7 @@ FLAGS = tf.flags.FLAGS
 
 tf.flags.DEFINE_string("checkpoint_path", "",
                        "Model checkpoint file or directory containing a "
-                       "model checkpoint file.")
+                       "model-backup checkpoint file.")
 tf.flags.DEFINE_string("vocab_file", "", "Text file containing the vocabulary.")
 tf.flags.DEFINE_string("input_files", "",
                        "File pattern or comma-separated list of file patterns "
@@ -60,7 +60,7 @@ def main(_):
                     len(filenames), FLAGS.input_files)
 
     with tf.Session(graph=g) as sess:
-        # Load the model from checkpoint.
+        # Load the model-backup from checkpoint.
         restore_fn(sess)
 
         # Prepare the caption generator. Here we are implicitly using the default
