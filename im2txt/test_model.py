@@ -1,8 +1,3 @@
-import tensorflow as tf
-
-from im2txt import configuration
-from im2txt.show_and_tell_model import ShowAndTellModel
-
 # filename = "/home/meteorshub/code/im2txt/im2txt/model-backup/inference/test4.jpg"
 # ssd300_weights_file = "/home/meteorshub/code/im2txt/im2txt/data/weights_SSD300.hdf5"
 # with tf.gfile.GFile(filename, "r") as f:
@@ -25,23 +20,28 @@ from im2txt.show_and_tell_model import ShowAndTellModel
 # i.save('test.jpg')
 #
 
-sess = tf.Session()
+# sess = tf.Session()
+#
+#
+# model_config = configuration.ModelConfig()
+# model_config.input_file_pattern = "/home/meteorshub/code/im2txt/im2txt/data/mscoco/train-?????-of-00256"
+# model_config.inception_checkpoint_file = "/home/meteorshub/code/im2txt/im2txt/data/inception_v3.ckpt"
+# model_config.ssd300_checkpoint_file = "/home/meteorshub/code/im2txt/im2txt/data/ssd300.ckpt"
+# with sess:
+#     model = ShowAndTellModel(model_config, "train")
+#     model.build()
+#
+#
+# variables_names = [v.name for v in tf.trainable_variables()]
+# sess.run(tf.global_variables_initializer())
+# model.init_fn(sess)
+#
+# values = sess.run(variables_names)
+# for k, v in zip(variables_names, values):
+#     print "Variable: ", k
+#     print "Shape: ", v.shape
 
+from im2txt.inference_utils.vocabulary import Vocabulary
 
-model_config = configuration.ModelConfig()
-model_config.input_file_pattern = "/home/meteorshub/code/im2txt/im2txt/data/mscoco/train-?????-of-00256"
-model_config.inception_checkpoint_file = "/home/meteorshub/code/im2txt/im2txt/data/inception_v3.ckpt"
-model_config.ssd300_checkpoint_file = "/home/meteorshub/code/im2txt/im2txt/data/ssd300.ckpt"
-with sess:
-    model = ShowAndTellModel(model_config, "train")
-    model.build()
-
-
-variables_names = [v.name for v in tf.trainable_variables()]
-sess.run(tf.global_variables_initializer())
-model.init_fn(sess)
-
-values = sess.run(variables_names)
-for k, v in zip(variables_names, values):
-    print "Variable: ", k
-    print "Shape: ", v.shape
+v = Vocabulary('/home/meteorshub/code/im2txt/im2txt/data/mscoco/word_counts.txt')
+print(v.word_to_id('<S>'))

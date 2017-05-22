@@ -4,3 +4,4 @@ im2txt/model*
 *.hdf5
 *.ckpt
 *.pyc
+*.json
