@@ -21,8 +21,8 @@ from __future__ import print_function
 import keras
 import tensorflow as tf
 
-from im2txt import configuration
-from im2txt import show_and_tell_model
+from ricga import configuration
+from ricga import show_and_tell_model
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -128,6 +128,7 @@ def main(unused_argv):
             init_fn=model.init_fn,
             save_interval_secs=training_config.save_interval_secs,
             saver=saver)
+
 
 if __name__ == "__main__":
     tf.app.run()

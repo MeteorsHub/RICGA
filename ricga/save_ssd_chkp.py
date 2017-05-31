@@ -1,14 +1,14 @@
 import keras.backend as K
 import tensorflow as tf
 
-from im2txt.reference.ssd import SSD300
+from ricga.reference.ssd import SSD300
 
 sess = tf.Session()
 sess.run(tf.global_variables_initializer())
 K.set_session(sess)
 with tf.variable_scope("SSD300"):
     model = SSD300((300, 300, 3))
-    model.load_weights("/home/meteorshub/code/im2txt/im2txt/data/weights_SSD300.hdf5", by_name=True)
+    model.load_weights("/home/meteorshub/code/ricga/ricga/data/weights_SSD300.hdf5", by_name=True)
 
 SSD300_variables = tf.get_collection(
     tf.GraphKeys.GLOBAL_VARIABLES, scope="SSD300")

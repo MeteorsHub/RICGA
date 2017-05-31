@@ -7,18 +7,18 @@ import os
 
 import tensorflow as tf
 
-from im2txt import configuration
-from im2txt import inference_wrapper
-from im2txt.eval_tools.pycocotools.coco import COCO
-from im2txt.inference_utils import caption_generator
-from im2txt.inference_utils import vocabulary
+from ricga import configuration
+from ricga import inference_wrapper
+from ricga.eval_tools.pycocotools.coco import COCO
+from ricga.inference_utils import caption_generator
+from ricga.inference_utils import vocabulary
 
 FLAGS = tf.flags.FLAGS
 
-tf.flags.DEFINE_string("checkpoint_path", "/home/meteorshub/code/im2txt/im2txt/model/train",
+tf.flags.DEFINE_string("checkpoint_path", "/home/meteorshub/code/ricga/ricga/model/train",
                        "Model checkpoint file or directory containing a "
                        "model-backup checkpoint file.")
-tf.flags.DEFINE_string("vocab_file", "/home/meteorshub/code/im2txt/im2txt/data/mscoco/word_counts.txt",
+tf.flags.DEFINE_string("vocab_file", "/home/meteorshub/code/ricga/ricga/data/mscoco/word_counts.txt",
                        "Text file containing the vocabulary.")
 tf.flags.DEFINE_string("image_dir",
                        "/media/meteorshub/resource/dataset/mscoco/images/val2014/",
@@ -28,7 +28,7 @@ tf.flags.DEFINE_string("annotation_file",
                        "/media/meteorshub/resource/dataset/mscoco/annotations/captions_val2014.json",
                        "annotations file for COCO api")
 tf.flags.DEFINE_string("result_file",
-                       "/home/meteorshub/code/im2txt/im2txt/eval_tools/results/captions_val2014_meteorshub_results.json",
+                       "/home/meteorshub/code/ricga/ricga/eval_tools/results/captions_val2014_meteorshub_results.json",
                        "result file path")
 
 tf.logging.set_verbosity(tf.logging.INFO)

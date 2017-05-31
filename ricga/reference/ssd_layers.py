@@ -17,10 +17,10 @@ from __future__ import division
 from __future__ import print_function
 
 import keras.backend as K
-from keras.engine.topology import InputSpec
-from keras.engine.topology import Layer
 import numpy as np
 import tensorflow as tf
+from keras.engine.topology import InputSpec
+from keras.engine.topology import Layer
 
 
 class Normalize(Layer):
@@ -44,6 +44,7 @@ class Normalize(Layer):
     #TODO
         Add possibility to have one scale for all features.
     """
+
     def __init__(self, scale, **kwargs):
         if K.image_dim_ordering() == 'tf':
             self.axis = 3
@@ -95,6 +96,7 @@ class PriorBox(Layer):
         Add possibility not to have variances.
         Add Theano support
     """
+
     def __init__(self, img_size, min_size, max_size=None, aspect_ratios=None,
                  flip=True, variances=[0.1], clip=True, **kwargs):
         if K.image_dim_ordering() == 'tf':

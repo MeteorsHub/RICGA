@@ -1,6 +1,6 @@
 .idea
-im2txt/data/mscoco
-im2txt/model*
+ricga/data/mscoco
+ricga/model*
 *.hdf5
 *.ckpt
 *.pyc

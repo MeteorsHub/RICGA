@@ -29,8 +29,8 @@ from keras.layers import ZeroPadding2D
 from keras.layers.merge import Concatenate
 from keras.models import Model
 
-from im2txt.reference.ssd_layers import Normalize
-from im2txt.reference.ssd_layers import PriorBox
+from ricga.reference.ssd_layers import Normalize
+from ricga.reference.ssd_layers import PriorBox
 
 
 def SSD300(input_shape, num_classes=21):

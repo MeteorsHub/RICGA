@@ -1,5 +1,5 @@
 # filename = "/home/meteorshub/code/im2txt/im2txt/model-backup/inference/test4.jpg"
-# ssd300_weights_file = "/home/meteorshub/code/im2txt/im2txt/data/weights_SSD300.hdf5"
+# ssd300_weights_file = "/home/meteorshub/code/ricga/ricga/data/weights_SSD300.hdf5"
 # with tf.gfile.GFile(filename, "r") as f:
 #     image = f.read()
 #
@@ -24,9 +24,9 @@
 #
 #
 # model_config = configuration.ModelConfig()
-# model_config.input_file_pattern = "/home/meteorshub/code/im2txt/im2txt/data/mscoco/train-?????-of-00256"
-# model_config.inception_checkpoint_file = "/home/meteorshub/code/im2txt/im2txt/data/inception_v3.ckpt"
-# model_config.ssd300_checkpoint_file = "/home/meteorshub/code/im2txt/im2txt/data/ssd300.ckpt"
+# model_config.input_file_pattern = "/home/meteorshub/code/ricga/ricga/data/mscoco/train-?????-of-00256"
+# model_config.inception_checkpoint_file = "/home/meteorshub/code/ricga/ricga/data/inception_v3.ckpt"
+# model_config.ssd300_checkpoint_file = "/home/meteorshub/code/ricga/ricga/data/ssd300.ckpt"
 # with sess:
 #     model = ShowAndTellModel(model_config, "train")
 #     model.build()
@@ -41,7 +41,7 @@
 #     print "Variable: ", k
 #     print "Shape: ", v.shape
 
-from im2txt.inference_utils.vocabulary import Vocabulary
+from ricga.inference_utils.vocabulary import Vocabulary
 
-v = Vocabulary('/home/meteorshub/code/im2txt/im2txt/data/mscoco/word_counts.txt')
+v = Vocabulary('/home/meteorshub/code/ricga/ricga/data/mscoco/word_counts.txt')
 print(v.word_to_id('<S>'))
