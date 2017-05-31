@@ -13,11 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 
-"""Image-to-text implementation based on http://arxiv.org/abs/1411.4555.
-
-"Show and Tell: A Neural Image Caption Generator"
-Oriol Vinyals, Alexander Toshev, Samy Bengio, Dumitru Erhan
-"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -31,12 +26,7 @@ from ricga.ops import inputs as input_ops
 from ricga.reference.ssd import SSD300
 
 
-class ShowAndTellModel(object):
-    """Image-to-text implementation based on http://arxiv.org/abs/1411.4555.
-  
-    "Show and Tell: A Neural Image Caption Generator"
-    Oriol Vinyals, Alexander Toshev, Samy Bengio, Dumitru Erhan
-    """
+class RicgaModel(object):
 
     def __init__(self, config, mode, train_inception=False):
         """Basic setup.
@@ -117,7 +107,7 @@ class ShowAndTellModel(object):
         self.global_step = None
 
     def is_training(self):
-        """Returns true if the model-backup is built for training mode."""
+        """Returns true if the model is built for training mode."""
         return self.mode == "train"
 
     def process_image(self, encoded_image, thread_id=0):
@@ -208,7 +198,7 @@ class ShowAndTellModel(object):
         self.input_mask = input_mask
 
     def build_image_embeddings(self):
-        """Builds the image model-backup subgraph and generates image embeddings.
+        """Builds the image model subgraph and generates image embeddings.
     
         Inputs:
           self.images
@@ -264,7 +254,7 @@ class ShowAndTellModel(object):
         self.seq_embeddings = seq_embeddings
 
     def build_model(self):
-        """Builds the model-backup.
+        """Builds the model.
     
         Inputs:
           self.image_embeddings

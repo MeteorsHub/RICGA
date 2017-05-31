@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Train the model-backup."""
+"""Train the model."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -22,22 +22,22 @@ import keras
 import tensorflow as tf
 
 from ricga import configuration
-from ricga import show_and_tell_model
+from ricga import ricga_model
 
 FLAGS = tf.app.flags.FLAGS
 
-tf.flags.DEFINE_string("input_file_pattern", "",
+tf.flags.DEFINE_string("input_file_pattern", "/home/meteorshub/code/RICGA/ricga/data/mscoco/train-?????-of-00256",
                        "File pattern of sharded TFRecord input files.")
-tf.flags.DEFINE_string("inception_checkpoint_file", "",
-                       "Path to a pretrained inception_v3 model-backup.")
-tf.flags.DEFINE_string("ssd300_checkpoint_file", "",
-                       "Path to a pretrained ssd300 model-backup.")
-tf.flags.DEFINE_string("train_dir", "",
-                       "Directory for saving and loading model-backup checkpoints.")
+tf.flags.DEFINE_string("inception_checkpoint_file", "/home/meteorshub/code/RICGA/ricga/data/inception_v3.ckpt",
+                       "Path to a pretrained inception_v3 model.")
+tf.flags.DEFINE_string("ssd300_checkpoint_file", "/home/meteorshub/code/RICGA/ricga/data/ssd300.ckpt",
+                       "Path to a pretrained ssd300 model.")
+tf.flags.DEFINE_string("train_dir", "/home/meteorshub/code/RICGA/ricga/model/train",
+                       "Directory for saving and loading model checkpoints.")
 tf.flags.DEFINE_boolean("train_inception", False,
                         "Whether to train inception submodel variables.")
 tf.flags.DEFINE_integer("number_of_steps", 1000000, "Number of training steps.")
-tf.flags.DEFINE_integer("log_every_n_steps", 1,
+tf.flags.DEFINE_integer("log_every_n_steps", 10,
                         "Frequency at which loss and global step are logged.")
 
 tf.logging.set_verbosity(tf.logging.INFO)
@@ -62,8 +62,8 @@ def main(unused_argv):
     # Build the TensorFlow graph.
     g = tf.Graph()
     with g.as_default():
-        # Build the model-backup.
-        model = show_and_tell_model.ShowAndTellModel(
+        # Build the model.
+        model = ricga_model.RicgaModel(
             model_config, mode="train", train_inception=FLAGS.train_inception)
         model.build()
 
@@ -109,7 +109,7 @@ def main(unused_argv):
             learning_rate_decay_fn=learning_rate_decay_fn,
             variables=trainable_variables)
 
-        # Set up the Saver for saving and restoring model-backup checkpoints.
+        # Set up the Saver for saving and restoring model checkpoints.
         saver = tf.train.Saver(max_to_keep=training_config.max_checkpoints_to_keep)
 
     sess = tf.Session()

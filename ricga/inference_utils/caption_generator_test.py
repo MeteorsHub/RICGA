@@ -31,13 +31,13 @@ class FakeVocab(object):
 
 
 class FakeModel(object):
-    """Fake model-backup for testing purposes."""
+    """Fake model for testing purposes."""
 
     def __init__(self):
         # Number of words in the vocab.
         self._vocab_size = 12
 
-        # Dimensionality of the nominal model-backup state.
+        # Dimensionality of the nominal model state.
         self._state_size = 1
 
         # Map of previous word to the probability distribution of the next word.
@@ -67,7 +67,7 @@ class FakeModel(object):
     # pylint: disable=unused-argument
 
     def feed_image(self, sess, encoded_image):
-        # Return a nominal model-backup state.
+        # Return a nominal model state.
         return np.zeros([1, self._state_size])
 
     def inference_step(self, sess, input_feed, state_feed):

@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-r"""Generate captions for images using default beam search parameters."""
+"""
+Generate captions for images using default beam search parameters.
+If you want to run the script without GPU, you should define CUDA_VISIBLE_DEVICES="" before running the code.
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -30,11 +33,12 @@ from ricga.inference_utils import vocabulary
 
 FLAGS = tf.flags.FLAGS
 
-tf.flags.DEFINE_string("checkpoint_path", "",
+tf.flags.DEFINE_string("checkpoint_path", "/home/meteorshub/code/RICGA/ricga/model/train",
                        "Model checkpoint file or directory containing a "
-                       "model-backup checkpoint file.")
-tf.flags.DEFINE_string("vocab_file", "", "Text file containing the vocabulary.")
-tf.flags.DEFINE_string("input_files", "",
+                       "model checkpoint file.")
+tf.flags.DEFINE_string("vocab_file", "/home/meteorshub/code/RICGA/ricga/data/mscoco/word_counts.txt",
+                       "Text file containing the vocabulary.")
+tf.flags.DEFINE_string("input_files", "/home/meteorshub/code/RICGA/ricga/data/test_images/test?.jpg",
                        "File pattern or comma-separated list of file patterns "
                        "of image files.")
 
@@ -60,7 +64,7 @@ def main(_):
                     len(filenames), FLAGS.input_files)
 
     with tf.Session(graph=g) as sess:
-        # Load the model-backup from checkpoint.
+        # Load the model from checkpoint.
         restore_fn(sess)
 
         # Prepare the caption generator. Here we are implicitly using the default

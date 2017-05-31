@@ -13,25 +13,25 @@
 # limitations under the License.
 # ==============================================================================
 
-"""Model wrapper class for performing inference with a ShowAndTellModel."""
+"""Model wrapper class for performing inference with a RicgaModel."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from ricga import show_and_tell_model
+from ricga import ricga_model
 from ricga.inference_utils import inference_wrapper_base
 
 
 class InferenceWrapper(inference_wrapper_base.InferenceWrapperBase):
-    """Model wrapper class for performing inference with a ShowAndTellModel."""
+    """Model wrapper class for performing inference with a RicgaModel."""
 
     def __init__(self):
         super(InferenceWrapper, self).__init__()
         self.encoded_image = None
 
     def build_model(self, model_config):
-        model = show_and_tell_model.ShowAndTellModel(model_config, mode="inference")
+        model = ricga_model.RicgaModel(model_config, mode="inference")
         model.build()
         return model
 

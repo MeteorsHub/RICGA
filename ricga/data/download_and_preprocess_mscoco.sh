@@ -41,7 +41,7 @@ SCRATCH_DIR="${OUTPUT_DIR}/raw-data"
 mkdir -p "${OUTPUT_DIR}"
 mkdir -p "${SCRATCH_DIR}"
 CURRENT_DIR=$(pwd)
-WORK_DIR="$0.runfiles/ricga/ricga"
+WORK_DIR="$0.runfiles/RICGA/ricga"
 
 # Helper function to download and unpack a .zip file.
 function download_and_unzip() {

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Class for generating captions from an image-to-text model-backup."""
+"""Class for generating captions from an image-to-text model."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -108,7 +108,7 @@ class TopN(object):
 
 
 class CaptionGenerator(object):
-    """Class to generate captions from an image-to-text model-backup."""
+    """Class to generate captions from an image-to-text model."""
 
     def __init__(self,
                  model,
@@ -119,7 +119,7 @@ class CaptionGenerator(object):
         """Initializes the generator.
     
         Args:
-          model: Object encapsulating a trained image-to-text model-backup. Must have
+          model: Object encapsulating a trained image-to-text model. Must have
             methods feed_image() and inference_step(). For example, an instance of
             InferenceWrapperBase.
           vocab: A Vocabulary object.

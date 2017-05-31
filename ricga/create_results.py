@@ -1,3 +1,8 @@
+"""
+This script generates mscoco result json file format.
+The result file will later be used in evaluation.
+"""
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -15,10 +20,10 @@ from ricga.inference_utils import vocabulary
 
 FLAGS = tf.flags.FLAGS
 
-tf.flags.DEFINE_string("checkpoint_path", "/home/meteorshub/code/ricga/ricga/model/train",
+tf.flags.DEFINE_string("checkpoint_path", "/home/meteorshub/code/RICGA/ricga/model/train",
                        "Model checkpoint file or directory containing a "
-                       "model-backup checkpoint file.")
-tf.flags.DEFINE_string("vocab_file", "/home/meteorshub/code/ricga/ricga/data/mscoco/word_counts.txt",
+                       "model checkpoint file.")
+tf.flags.DEFINE_string("vocab_file", "/home/meteorshub/code/RICGA/ricga/data/mscoco/word_counts.txt",
                        "Text file containing the vocabulary.")
 tf.flags.DEFINE_string("image_dir",
                        "/media/meteorshub/resource/dataset/mscoco/images/val2014/",
@@ -28,8 +33,9 @@ tf.flags.DEFINE_string("annotation_file",
                        "/media/meteorshub/resource/dataset/mscoco/annotations/captions_val2014.json",
                        "annotations file for COCO api")
 tf.flags.DEFINE_string("result_file",
-                       "/home/meteorshub/code/ricga/ricga/eval_tools/results/captions_val2014_meteorshub_results.json",
+                       "/home/meteorshub/code/RICGA/ricga/eval_tools/results/captions_val2014_meteorshub_results.json",
                        "result file path")
+tf.flags.DEFINE_integer("eval_num", 1000, "How many samples to evaluate.")
 
 tf.logging.set_verbosity(tf.logging.INFO)
 
@@ -48,7 +54,7 @@ def main(_):
     result = []
 
     with tf.Session(graph=g) as sess:
-        # Load the model-backup from checkpoint.
+        # Load the model from checkpoint.
         restore_fn(sess)
 
         # Prepare the caption generator. Here we are implicitly using the default
@@ -59,7 +65,7 @@ def main(_):
         image_ids = coco.getImgIds()
         img_objs = coco.loadImgs(image_ids)
 
-        for i in range(len(img_objs)):
+        for i in range(min(len(img_objs), FLAGS.eval_num)):
             with tf.gfile.GFile(os.path.join(FLAGS.image_dir, img_objs[i]['file_name']), "r") as f:
                 image = f.read()
             captions = generator.beam_search(sess, image)
@@ -68,10 +74,7 @@ def main(_):
             sentence = " ".join(sentence)
             result.append({"image_id": img_objs[i]['id'], "caption": sentence})
             if (i + 1) % 10 == 0:
-                print("Captions for image %s in %s done" % (i + 1, len(img_objs)))
-
-            if i > 1000:
-                break
+                print("Captions for image %s in %s done" % (i + 1, min(len(img_objs), FLAGS.eval_num)))
 
     json.dump(result, open(FLAGS.result_file, 'w'))
 

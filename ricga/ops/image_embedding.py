@@ -53,7 +53,7 @@ def inception_v3(images,
     Returns:
       end_points: A dictionary of activations from inception_v3 layers.
     """
-    # Only consider the inception model-backup to be in training mode if it's trainable.
+    # Only consider the inception model to be in training mode if it's trainable.
     is_inception_model_training = trainable and is_training
 
     if use_batch_norm:

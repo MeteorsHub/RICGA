@@ -13,10 +13,12 @@
 # limitations under the License.
 # ==============================================================================
 
-"""Evaluate the model-backup.
+"""Evaluate the model.
 
 This script should be run concurrently with training so that summaries show up
 in TensorBoard.
+
+If you want to run the script without GPU, you should define CUDA_VISIBLE_DEVICES="" before running the code.
 """
 
 from __future__ import absolute_import
@@ -31,15 +33,15 @@ import numpy as np
 import tensorflow as tf
 
 from ricga import configuration
-from ricga import show_and_tell_model
+from ricga import ricga_model
 
 FLAGS = tf.flags.FLAGS
 
-tf.flags.DEFINE_string("input_file_pattern", "",
+tf.flags.DEFINE_string("input_file_pattern", "/home/meteorshub/code/RICGA/ricga/data/mscoco/val-?????-of-00004",
                        "File pattern of sharded TFRecord input files.")
-tf.flags.DEFINE_string("checkpoint_dir", "",
-                       "Directory containing model-backup checkpoints.")
-tf.flags.DEFINE_string("eval_dir", "", "Directory to write event logs.")
+tf.flags.DEFINE_string("checkpoint_dir", "/home/meteorshub/code/RICGA/ricga/model/train",
+                       "Directory containing model checkpoints.")
+tf.flags.DEFINE_string("eval_dir", "/home/meteorshub/code/RICGA/ricga/model/eval", "Directory to write event logs.")
 
 tf.flags.DEFINE_integer("eval_interval_secs", 600,
                         "Interval between evaluation runs.")
@@ -59,12 +61,12 @@ def evaluate_model(sess, model, global_step, summary_writer, summary_op):
   
     Args:
       sess: Session object.
-      model: Instance of ShowAndTellModel; the model-backup to evaluate.
-      global_step: Integer; global step of the model-backup checkpoint.
+      model: Instance of RicgaModel; the model to evaluate.
+      global_step: Integer; global step of the model checkpoint.
       summary_writer: Instance of FileWriter.
-      summary_op: Op for generating model-backup summaries.
+      summary_op: Op for generating model summaries.
     """
-    # Log model-backup summaries on a single batch.
+    # Log model summaries on a single batch.
     summary_str = sess.run(summary_op)
     summary_writer.add_summary(summary_str, global_step)
 
@@ -104,13 +106,13 @@ def evaluate_model(sess, model, global_step, summary_writer, summary_op):
 
 
 def run_once(model, saver, summary_writer, summary_op):
-    """Evaluates the latest model-backup checkpoint.
+    """Evaluates the latest model checkpoint.
   
     Args:
-      model: Instance of ShowAndTellModel; the model-backup to evaluate.
-      saver: Instance of tf.train.Saver for restoring model-backup Variables.
+      model: Instance of RicgaModel; the model to evaluate.
+      saver: Instance of tf.train.Saver for restoring model Variables.
       summary_writer: Instance of FileWriter.
-      summary_op: Op for generating model-backup summaries.
+      summary_op: Op for generating model summaries.
     """
     model_path = tf.train.latest_checkpoint(FLAGS.checkpoint_dir)
     if not model_path:
@@ -119,8 +121,8 @@ def run_once(model, saver, summary_writer, summary_op):
         return
 
     with tf.Session() as sess:
-        # Load model-backup from checkpoint.
-        tf.logging.info("Loading model-backup from checkpoint: %s", model_path)
+        # Load model from checkpoint.
+        tf.logging.info("Loading model from checkpoint: %s", model_path)
         saver.restore(sess, model_path)
         global_step = tf.train.global_step(sess, model.global_step.name)
         tf.logging.info("Successfully loaded %s at global step = %d.",
@@ -160,13 +162,13 @@ def run():
 
     g = tf.Graph()
     with g.as_default():
-        # Build the model-backup for evaluation.
+        # Build the model for evaluation.
         model_config = configuration.ModelConfig()
         model_config.input_file_pattern = FLAGS.input_file_pattern
-        model = show_and_tell_model.ShowAndTellModel(model_config, mode="eval")
+        model = ricga_model.RicgaModel(model_config, mode="eval")
         model.build()
 
-        # Create the Saver to restore model-backup Variables.
+        # Create the Saver to restore model Variables.
         saver = tf.train.Saver()
 
         # Create the summary operation and the summary writer.

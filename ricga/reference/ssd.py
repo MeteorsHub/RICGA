@@ -40,7 +40,7 @@ def SSD300(input_shape, num_classes=21):
         input_shape: Shape of the input image,
             expected to be either (300, 300, 3) or (3, 300, 300)(not tested).
         num_classes: Number of classes including background.
-        pretrain: If true, model-backup will use weights pretrained on voc.
+        pretrain: If true, model will use weights pretrained on voc.
 
     # References
         https://arxiv.org/abs/1512.02325
