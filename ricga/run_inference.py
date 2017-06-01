@@ -22,10 +22,11 @@ import math
 import os
 
 import tensorflow as tf
-from im2txt import configuration
-from im2txt import inference_wrapper
-from im2txt.inference_utils import caption_generator
-from im2txt.inference_utils import vocabulary
+
+from ricga import configuration
+from ricga import inference_wrapper
+from ricga.inference_utils import caption_generator
+from ricga.inference_utils import vocabulary
 
 FLAGS = tf.flags.FLAGS
 

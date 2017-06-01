@@ -19,21 +19,22 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from im2txt import configuration
-from im2txt import show_and_tell_model
+
+from ricga import configuration
+from ricga import show_and_tell_model
 
 FLAGS = tf.app.flags.FLAGS
 
-tf.flags.DEFINE_string("input_file_pattern", "",
+tf.flags.DEFINE_string("input_file_pattern", "/home/meteorshub/code/RICGA/ricga/data/mscoco/train-?????-of-00256",
                        "File pattern of sharded TFRecord input files.")
-tf.flags.DEFINE_string("inception_checkpoint_file", "",
+tf.flags.DEFINE_string("inception_checkpoint_file", "/home/meteorshub/code/RICGA/ricga/data/inception_v3.ckpt",
                        "Path to a pretrained inception_v3 model.")
-tf.flags.DEFINE_string("train_dir", "",
+tf.flags.DEFINE_string("train_dir", "/home/meteorshub/code/RICGA/ricga/model-original/train",
                        "Directory for saving and loading model checkpoints.")
 tf.flags.DEFINE_boolean("train_inception", False,
                         "Whether to train inception submodel variables.")
 tf.flags.DEFINE_integer("number_of_steps", 1000000, "Number of training steps.")
-tf.flags.DEFINE_integer("log_every_n_steps", 1,
+tf.flags.DEFINE_integer("log_every_n_steps", 10,
                         "Frequency at which loss and global step are logged.")
 
 tf.logging.set_verbosity(tf.logging.INFO)
