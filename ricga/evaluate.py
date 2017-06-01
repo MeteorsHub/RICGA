@@ -35,18 +35,19 @@ from ricga import show_and_tell_model
 
 FLAGS = tf.flags.FLAGS
 
-tf.flags.DEFINE_string("input_file_pattern", "",
+tf.flags.DEFINE_string("input_file_pattern", "/home/meteorshub/code/RICGA/ricga/data/mscoco/val-?????-of-00004",
                        "File pattern of sharded TFRecord input files.")
-tf.flags.DEFINE_string("checkpoint_dir", "",
+tf.flags.DEFINE_string("checkpoint_dir", "/home/meteorshub/code/RICGA/ricga/model-original/train",
                        "Directory containing model checkpoints.")
-tf.flags.DEFINE_string("eval_dir", "", "Directory to write event logs.")
+tf.flags.DEFINE_string("eval_dir", "/home/meteorshub/code/RICGA/ricga/model-original/eval",
+                       "Directory to write event logs.")
 
 tf.flags.DEFINE_integer("eval_interval_secs", 600,
                         "Interval between evaluation runs.")
 tf.flags.DEFINE_integer("num_eval_examples", 10132,
                         "Number of examples for evaluation.")
 
-tf.flags.DEFINE_integer("min_global_step", 500,
+tf.flags.DEFINE_integer("min_global_step", 100,
                         "Minimum global step to run evaluation.")
 
 tf.logging.set_verbosity(tf.logging.INFO)
