@@ -30,11 +30,12 @@ from ricga.inference_utils import vocabulary
 
 FLAGS = tf.flags.FLAGS
 
-tf.flags.DEFINE_string("checkpoint_path", "",
+tf.flags.DEFINE_string("checkpoint_path", "/home/meteorshub/code/RICGA/ricga/model-original/train",
                        "Model checkpoint file or directory containing a "
                        "model checkpoint file.")
-tf.flags.DEFINE_string("vocab_file", "", "Text file containing the vocabulary.")
-tf.flags.DEFINE_string("input_files", "",
+tf.flags.DEFINE_string("vocab_file", "/home/meteorshub/code/RICGA/ricga/data/mscoco/word_counts.txt",
+                       "Text file containing the vocabulary.")
+tf.flags.DEFINE_string("input_files", "/home/meteorshub/code/RICGA/ricga/data/test_images/test?.jpg",
                        "File pattern or comma-separated list of file patterns "
                        "of image files.")
 
