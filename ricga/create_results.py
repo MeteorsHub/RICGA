@@ -6,7 +6,6 @@ import json
 import os
 
 import tensorflow as tf
-
 from im2txt import configuration
 from im2txt import inference_wrapper
 from im2txt.eval_tools.pycocotools.coco import COCO
