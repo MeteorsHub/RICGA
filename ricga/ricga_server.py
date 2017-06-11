@@ -20,7 +20,7 @@ tf.flags.DEFINE_string("checkpoint_path", "/home/meteorshub/code/RICGA/ricga/mod
 tf.flags.DEFINE_string("vocab_file", "/home/meteorshub/code/RICGA/ricga/data/mscoco/word_counts.txt",
                        "Text file containing the vocabulary.")
 
-tf.flags.DEFINE_string("server_ip", "59.66.143.26", "Server address")
+tf.flags.DEFINE_string("server_ip", "59.66.143.35", "Server address")
 tf.flags.DEFINE_integer("server_port", 8080, "server port")
 
 tf.logging.set_verbosity(tf.logging.INFO)
